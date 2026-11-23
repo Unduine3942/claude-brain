@@ -1,0 +1,106 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "claude-brain"
+dynamic = ["version"]
+description = "Durable, queryable memory across Claude Code sessions, stored in SQLite and an Obsidian vault."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Unduine3942" }]
+keywords = ["claude-code", "obsidian", "sqlite", "knowledge-management", "hooks"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Documentation",
+]
+# Runtime is stdlib-only today. Pydantic arrives with the vendored transcript
+# models in Phase 2; keep it out of the dependency set until it is actually used.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pre-commit>=3.8",
+]
+
+[project.scripts]
+brain = "claude_brain.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Unduine3942/claude-brain"
+Issues = "https://github.com/Unduine3942/claude-brain/issues"
+
+[tool.hatch.version]
+source = "vcs"
+# Allows building before the first git tag exists.
+raw-options = { fallback_version = "0.1.0" }
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/claude_brain/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/claude_brain"]
+
+# Both directories are read at runtime, not imported, so they must be shipped
+# explicitly: the migration runner reads the .sql files and the vault writer
+# reads the starter templates.
+[tool.hatch.build.targets.wheel.force-include]
+"src/claude_brain/db/migrations" = "claude_brain/db/migrations"
+"src/claude_brain/resources" = "claude_brain/resources"
+
+[tool.pytest.ini_options]
+# importlib mode + src layout means tests exercise the INSTALLED package,
+# so packaging mistakes fail in CI instead of at a user's `pip install`.
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]
+# An unclosed sqlite connection is only a warning while the database is
+# in memory; against a real file it is a held lock that breaks tmp_path
+# cleanup on Windows, the platform this actually runs on. Fail on it.
+filterwarnings = ["error::ResourceWarning"]
+
+[tool.coverage.run]
+source = ["claude_brain"]
+omit = ["*/ui/*", "*/_version.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "PTH", "RUF"]
+ignore = [
+    "E501",   # line length is enforced by the formatter
+    "B008",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Vendored upstream code is kept close to its source for easy re-syncing.
+"src/claude_brain/core/transcript.py" = ["ALL"]
+"src/claude_brain/ui/*" = ["SIM", "B"]
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["claude_brain"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+# The tkinter UI is legacy and not the target of this hardening work.
+exclude = ["src/claude_brain/ui/", "src/claude_brain/core/transcript.py"]
+
+[[tool.mypy.overrides]]
+module = "claude_brain.ui.*"
+ignore_errors = true

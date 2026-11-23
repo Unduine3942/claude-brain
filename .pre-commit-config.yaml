@@ -1,0 +1,22 @@
+# ruff-check runs BEFORE ruff-format: fixes first, then formatting.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=512]
+      # Last line of defence: this repo's folder is also a vault, and
+      # transcripts are known to contain pasted credentials.
+      - id: detect-private-key

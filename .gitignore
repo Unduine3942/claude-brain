@@ -1,0 +1,81 @@
+# ---------------------------------------------------------------------------
+# Secrets — first, and deliberately broad. This repo sits in a folder that is
+# also an Obsidian vault, and session transcripts are known to contain pasted
+# credentials, so these patterns are a safety net, not a formality.
+# ---------------------------------------------------------------------------
+*credential*
+*credentials*
+*.key
+*.pem
+*.pfx
+*.p12
+.env
+.env.*
+!.env.example
+secrets.*
+*_secret*
+*password*
+*token*
+
+# Databases and their WAL sidecars. Never commit these, and never copy a live
+# WAL database by file copy — use VACUUM INTO or Connection.backup().
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+backups/
+
+# Captured session material. This is personal knowledge, not source.
+*-session.tmp
+observations.jsonl
+.observer.lock
+
+# This directory is BOTH the tool's repo and one of the Obsidian vaults the tool
+# writes into. The tool is intended to be public; the vault notes are personal
+# (they contain project and client detail), so the vault's note folders stay
+# untracked here. Vault content belongs in its own private repo.
+Sessions/
+docs/private/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+src/claude_brain/_version.py
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Obsidian workspace state — churns constantly and is machine-specific.
+# The vault's notes are tracked; its UI state is not.
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.obsidian/plugins/*/data.json
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Obsidian config for this directory's own vault. Machine/workspace state, and
+# this repo is not a vault distribution.
+.obsidian/
+
+# Local Claude Code permission allowlist - per-machine, and it leaks local paths.
+.claude/settings.local.json
